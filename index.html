@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WOFF実機確認</title>
+<script src="https://static.worksmobile.net/static/wm/woff/edge/3.7.4/sdk.js"></script>
+<style>body{font-family:sans-serif;padding:16px}pre{background:#f4f4f4;padding:8px;white-space:pre-wrap;word-break:break-all}button{padding:10px;margin:4px 0;width:100%}</style></head>
+<body><h2>WOFF実機確認</h2>
+<label>WOFF ID: <input id="wid" style="width:100%"></label><button onclick="start()">init</button>
+<pre id="out">未実行</pre>
+<button onclick="pdf()">blob PDFダウンロード</button>
+<a href="https://example.com" target="_blank">外部リンク(target=_blank)</a>
+<script>
+const out=document.getElementById('out');const log=s=>out.textContent+="\n"+s;
+const q=new URLSearchParams(location.search);document.getElementById('wid').value=q.get('woffId')||localStorage.woffId||'';
+async function start(){out.textContent='';const id=document.getElementById('wid').value.trim();localStorage.woffId=id;
+try{await woff.init({woffId:id});log('init: OK');}catch(e){log('init NG: '+e);return}
+log('isInClient: '+woff.isInClient());log('getOS: '+woff.getOS());log('language: '+woff.getLanguage());
+try{log('isLoggedIn: '+woff.isLoggedIn())}catch(e){}
+if(!woff.isInClient()&&!woff.isLoggedIn()){log('login()へ');woff.login();return}
+try{log('context: '+JSON.stringify(woff.getContext()))}catch(e){log('context NG: '+e)}
+try{const p=await woff.getProfile();log('profile: '+JSON.stringify(p))}catch(e){log('profile NG: '+e)}
+const t=woff.getAccessToken();log('accessToken: '+(t?t.slice(0,10)+'...('+t.length+'文字)':'なし'));
+const it=woff.getIDToken&&woff.getIDToken();log('IDToken: '+(it?it.slice(0,10)+'...('+it.length+'文字)':'なし'));}
+function pdf(){const b=new Blob(['%PDF-1.1\n%test\n'],{type:'application/pdf'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='test.pdf';a.click();log('blob DL実行')}
+if(q.get('woffId'))start();
+</script></body></html>
