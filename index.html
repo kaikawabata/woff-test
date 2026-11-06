@@ -6,6 +6,9 @@
 <label>WOFF ID: <input id="wid" style="width:100%"></label><button onclick="start()">init</button>
 <pre id="out">未実行</pre>
 <button onclick="pdf()">blob PDFダウンロード</button>
+<button onclick="log('https PDF: 直接開く');location.href='https://kaikawabata.github.io/woff-test/test.pdf'">https PDFを直接開く</button>
+<a href="https://kaikawabata.github.io/woff-test/test.pdf" download>https PDFをダウンロード(download属性)</a><br>
+<button onclick="ow()">PDFを外部ブラウザで開く(woff.openWindow)</button>
 <a href="https://example.com" target="_blank">外部リンク(target=_blank)</a>
 <script>
 const out=document.getElementById('out');const log=s=>out.textContent+="\n"+s;
@@ -19,6 +22,7 @@ try{log('context: '+JSON.stringify(woff.getContext()))}catch(e){log('context NG:
 try{const p=await woff.getProfile();log('profile: '+JSON.stringify(p))}catch(e){log('profile NG: '+e)}
 const t=woff.getAccessToken();log('accessToken: '+(t?t.slice(0,10)+'...('+t.length+'文字)':'なし'));
 const it=woff.getIDToken&&woff.getIDToken();log('IDToken: '+(it?it.slice(0,10)+'...('+it.length+'文字)':'なし'));}
+function ow(){try{woff.openWindow({url:'https://kaikawabata.github.io/woff-test/test.pdf',external:true});log('openWindow実行')}catch(e){log('openWindow NG: '+e)}}
 function pdf(){const b=new Blob(['%PDF-1.1\n%test\n'],{type:'application/pdf'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='test.pdf';a.click();log('blob DL実行')}
 if(q.get('woffId'))start();
 </script></body></html>
