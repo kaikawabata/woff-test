@@ -10,6 +10,10 @@
 <a href="https://kaikawabata.github.io/woff-test/test.pdf" download>https PDFをダウンロード(download属性)</a><br>
 <button onclick="ow()">PDFを外部ブラウザで開く(woff.openWindow)</button>
 <a href="https://example.com" target="_blank">外部リンク(target=_blank)</a>
+<hr><h3>SSO実験（Cognito + LINE WORKS）</h3>
+<button onclick="sso()">LINE WORKSでログイン（Cognito経由）</button>
+<pre id="sso">未実行</pre>
+
 <script>
 const out=document.getElementById('out');const log=s=>out.textContent+="\n"+s;
 const q=new URLSearchParams(location.search);document.getElementById('wid').value=q.get('woffId')||localStorage.woffId||'';
@@ -25,4 +29,20 @@ const it=woff.getIDToken&&woff.getIDToken();log('IDToken: '+(it?it.slice(0,10)+'
 function ow(){try{woff.openWindow({url:'https://kaikawabata.github.io/woff-test/test.pdf',external:true});log('openWindow実行')}catch(e){log('openWindow NG: '+e)}}
 function pdf(){const b=new Blob(['%PDF-1.1\n%test\n'],{type:'application/pdf'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='test.pdf';a.click();log('blob DL実行')}
 if(q.get('woffId'))start();
+const CG='https://ap-northeast-1sxzpdoaeq.auth.ap-northeast-1.amazoncognito.com',CID='40uoodbqilko1bj172gjf12d6g',RU='https://kaikawabata.github.io/woff-test/';
+const so=document.getElementById('sso');const slog=s=>so.textContent+="\n"+s;
+const b64u=a=>btoa(String.fromCharCode(...new Uint8Array(a))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+async function sso(){const v=b64u(crypto.getRandomValues(new Uint8Array(32)));const st=b64u(crypto.getRandomValues(new Uint8Array(16)));
+localStorage.pkce=v;localStorage.st=st;const ch=b64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
+location.href=CG+'/oauth2/authorize?'+new URLSearchParams({identity_provider:'LineWorks',client_id:CID,response_type:'code',scope:'openid email profile',redirect_uri:RU,state:st,code_challenge:ch,code_challenge_method:'S256'});}
+async function ssoBack(){so.textContent='戻ってきた (code受信)';slog('isInClient(参考): '+(window.woff&&woff.isInClient?'SDKあり':'?'));slog('UA: '+navigator.userAgent.slice(0,80));
+if(q.get('state')!==localStorage.st){slog('state不一致');}
+try{const r=await fetch(CG+'/oauth2/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',client_id:CID,code:q.get('code'),redirect_uri:RU,code_verifier:localStorage.pkce||''})});
+const j=await r.json();if(!r.ok){slog('token NG: '+JSON.stringify(j));return}
+const c=JSON.parse(decodeURIComponent(escape(atob(j.id_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))));
+slog('Cognitoトークン取得 OK');slog('email: '+c.email);slog('name: '+(c.name||''));slog('cognito:username: '+c['cognito:username']);slog('identities: '+JSON.stringify((c.identities||[]).map(i=>({providerName:i.providerName,userId:i.userId}))));
+history.replaceState(null,'',RU);}catch(e){slog('token例外: '+e)}}
+if(q.get('code'))ssoBack();
+if(q.get('error'))document.getElementById('sso').textContent='エラー: '+q.get('error')+' / '+(q.get('error_description')||'');
+
 </script></body></html>
