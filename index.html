@@ -12,6 +12,7 @@
 <a href="https://example.com" target="_blank">外部リンク(target=_blank)</a>
 <hr><h3>SSO実験（Cognito + LINE WORKS）</h3>
 <button onclick="sso()">LINE WORKSでログイン（Cognito経由）</button>
+<button onclick="sso('COGNITO')">パスワードでログイン（Web版と同じ）</button>
 <pre id="sso">未実行</pre>
 
 <script>
@@ -32,9 +33,9 @@ if(q.get('woffId'))start();
 const CG='https://woff-sso-test2-ea7ca125.auth.ap-northeast-1.amazoncognito.com',CID='1d25tq0n38c0v81omf37lgp35h',RU='https://kaikawabata.github.io/woff-test/';
 const so=document.getElementById('sso');const slog=s=>so.textContent+="\n"+s;
 const b64u=a=>btoa(String.fromCharCode(...new Uint8Array(a))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-async function sso(){const v=b64u(crypto.getRandomValues(new Uint8Array(32)));const st=b64u(crypto.getRandomValues(new Uint8Array(16)));
+async function sso(p='LineWorks'){const v=b64u(crypto.getRandomValues(new Uint8Array(32)));const st=b64u(crypto.getRandomValues(new Uint8Array(16)));
 localStorage.pkce=v;localStorage.st=st;const ch=b64u(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
-location.href=CG+'/oauth2/authorize?'+new URLSearchParams({identity_provider:'LineWorks',client_id:CID,response_type:'code',scope:'openid email profile',redirect_uri:RU,state:st,code_challenge:ch,code_challenge_method:'S256'});}
+location.href=CG+'/oauth2/authorize?'+new URLSearchParams({identity_provider:p,client_id:CID,response_type:'code',scope:'openid email profile',redirect_uri:RU,state:st,code_challenge:ch,code_challenge_method:'S256'});}
 async function ssoBack(){so.textContent='戻ってきた (code受信)';slog('isInClient(参考): '+(window.woff&&woff.isInClient?'SDKあり':'?'));slog('UA: '+navigator.userAgent.slice(0,80));
 if(q.get('state')!==localStorage.st){slog('state不一致');}
 try{const r=await fetch(CG+'/oauth2/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'authorization_code',client_id:CID,code:q.get('code'),redirect_uri:RU,code_verifier:localStorage.pkce||''})});
