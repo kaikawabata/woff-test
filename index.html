@@ -29,7 +29,7 @@ const it=woff.getIDToken&&woff.getIDToken();log('IDToken: '+(it?it.slice(0,10)+'
 function ow(){try{woff.openWindow({url:'https://kaikawabata.github.io/woff-test/test.pdf',external:true});log('openWindow実行')}catch(e){log('openWindow NG: '+e)}}
 function pdf(){const b=new Blob(['%PDF-1.1\n%test\n'],{type:'application/pdf'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='test.pdf';a.click();log('blob DL実行')}
 if(q.get('woffId'))start();
-const CG='https://ap-northeast-1sxzpdoaeq.auth.ap-northeast-1.amazoncognito.com',CID='40uoodbqilko1bj172gjf12d6g',RU='https://kaikawabata.github.io/woff-test/';
+const CG='https://woff-sso-test2-ea7ca125.auth.ap-northeast-1.amazoncognito.com',CID='1d25tq0n38c0v81omf37lgp35h',RU='https://kaikawabata.github.io/woff-test/';
 const so=document.getElementById('sso');const slog=s=>so.textContent+="\n"+s;
 const b64u=a=>btoa(String.fromCharCode(...new Uint8Array(a))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 async function sso(){const v=b64u(crypto.getRandomValues(new Uint8Array(32)));const st=b64u(crypto.getRandomValues(new Uint8Array(16)));
